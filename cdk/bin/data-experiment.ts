@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import cdk = require('@aws-cdk/core');
-import { DataExperimentStack } from '../lib/data-experiment-stack';
+import { MainStack } from '../lib/main-stack';
 
 const app = new cdk.App();
-new DataExperimentStack(app, 'DataExperimentStack');
+new MainStack(app, 'DataExperimentStack');
