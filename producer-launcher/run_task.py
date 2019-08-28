@@ -21,4 +21,6 @@ def handler(event, context):
                 'assignPublicIp': 'DISABLED'
             }
         })
+    for i in response['tasks']:
+        print('taskArn: ' + i['taskArn'])
     return str(response)

@@ -9,6 +9,10 @@ import logs = require('@aws-cdk/aws-logs');
 import { EcsTask } from '@aws-cdk/aws-events-targets';
 import { Asset as S3Asset } from '@aws-cdk/aws-s3-assets';
 
+function getLambdaBaseCommand(functionName: string, payload = '{}'): string {
+  return `aws lambda invoke --function-name ${functionName} --payload '${payload}' /tmp/out --log-type Tail --query 'LogResult' --output text`;
+}
+
 export interface ProducerProps {
   assetBasePath: string,
   streamName: string,
@@ -79,7 +83,7 @@ export class Producer extends cdk.Construct {
     const runTaskPolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
-        'ecs:RunTask',
+        'ecs:RunTask'
       ],
       resources: [
         //cdk.Fn.getAtt(taskDefinition.node.uniqueId, 'Arn').toString(),
@@ -107,16 +111,35 @@ export class Producer extends cdk.Construct {
     producerLauncher.addToRolePolicy(runTaskPolicyStatement);
     producerLauncher.addToRolePolicy(taskExecutionRolePolicyStatement);
 
-    const baseCommand = `aws lambda invoke --function-name ${producerLauncher.functionArn} --payload '{}' /tmp/out --log-type Tail --query 'LogResult' --output text`;
-
-    new cdk.CfnOutput(this, 'launchProducerOnMacOS', {
-      exportName: 'launchProducerOnMacOS',
-      value: baseCommand + ' | base64 -D'
+    const stopTaskPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'ecs:StopTask'
+      ],
+      resources: [
+        '*'
+      ]
     });
 
-    new cdk.CfnOutput(this, 'launchProducerOnLinux', {
-      exportName: 'launchProducerOnLinux',
-      value: baseCommand + ' | base64 -d'
+    const producerStoper = new lambda.Function(this, 'ProducerStoper', {
+      runtime: lambda.Runtime.PYTHON_3_7,
+      code: lambda.Code.asset(path.join(props.assetBasePath, 'producer-stoper')),
+      handler: 'stop_task.handler',
+      environment: lambdaEnv,
     });
+    producerStoper.addToRolePolicy(stopTaskPolicyStatement);
+    producerStoper.addToRolePolicy(taskExecutionRolePolicyStatement);
+
+    // Generate command line output to trigger lambda functions from a Terminal
+    for (let [key, value] of new Map([['launchProducer', getLambdaBaseCommand(producerLauncher.functionArn)],
+                                      ['stopProducer', getLambdaBaseCommand(producerStoper.functionArn, '{"taskArn": "TOCOMPLETE"}')]])){
+      for (let os of ['MacOS', 'Linux']) {
+        const appendCommand = (os == 'MacOS') ? ' | base64 -D' : ' | base64 -d'
+        new cdk.CfnOutput(this, `${key}On${os}`, {
+          exportName: `${key}On${os}`,
+          value: value + appendCommand
+        });
+      }
+    }
   }
 }
