@@ -22,14 +22,22 @@ export class MainStack extends cdk.Stack {
       encryption: s3.BucketEncryption.S3_MANAGED
     });
 
-    // Creation of the Fargate producer layer
-    const producer = new Producer(this, 'ProducerLayer', {
-      assetBasePath: basePath
-    });
-
     // Creation of the Ingestion layer
     const ingestion = new Ingestion(this, 'IngestionLayer', {
       bucket: rawBucket
     })
+
+    // Creation of the Fargate producer layer
+    const producer = new Producer(this, 'ProducerLayer', {
+      assetBasePath: basePath,
+      streamName: ingestion.streamName,
+      streamArn: ingestion.streamArn
+    });
+    producer.node.addDependency(ingestion);
+
+    new cdk.CfnOutput(this, 'rawBucket', {
+      exportName: 'rawBucket',
+      value: rawBucket.bucketName,
+    });
   }
 }

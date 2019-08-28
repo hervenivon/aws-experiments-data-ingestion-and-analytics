@@ -6,15 +6,14 @@ import events = require('@aws-cdk/aws-events');
 import iam = require('@aws-cdk/aws-iam');
 import firehose = require('@aws-cdk/aws-kinesisfirehose');
 import { Bucket } from '@aws-cdk/aws-s3';
-import { EcsTask } from '@aws-cdk/aws-events-targets';
-import { Asset as S3Asset } from '@aws-cdk/aws-s3-assets';
 
 export interface IngestionProps {
   bucket: Bucket
 }
 
 export class Ingestion extends cdk.Construct {
-  public readonly bucket: Bucket;
+  public readonly streamName: string;
+  public readonly streamArn: string;
 
   constructor(scope: cdk.Construct, id: string, props: IngestionProps) {
     super(scope, id);
@@ -26,8 +25,9 @@ export class Ingestion extends cdk.Construct {
     props.bucket.grantReadWrite(role);
 
     // Props details: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-kinesisfirehose-deliverystream-extendeds3destinationconfiguration.html
+    const deliveryStreamName = 'BidRequestExperimentIngestionLayer';
     const ingestionLayer = new firehose.CfnDeliveryStream(this, 'FirehoseDeliveryStream', {
-      deliveryStreamName: 'BidRequestExperimentIngestionLayer',
+      deliveryStreamName,
       deliveryStreamType: 'DirectPut',
       extendedS3DestinationConfiguration: {
         bucketArn: props.bucket.bucketArn,
@@ -42,6 +42,7 @@ export class Ingestion extends cdk.Construct {
       }
     });
 
-    this.bucket = props.bucket;
+    this.streamName = ingestionLayer.deliveryStreamName || deliveryStreamName;
+    this.streamArn = ingestionLayer.attrArn;
   }
 }
