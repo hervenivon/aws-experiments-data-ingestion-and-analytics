@@ -9,12 +9,13 @@ import { Asset as S3Asset } from '@aws-cdk/aws-s3-assets';
 
 import { Producer } from './producer-construct';
 import { Ingestion } from './ingestion-construct';
+import { Enhancement } from './enhancement-construct';
 
 export class MainStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const basePath = path.join(__dirname, '..', '..');
+    const assetBasePath = path.join(__dirname, '..', '..');
 
     // Data Lake for Bidrequest store
     const rawBucket = new s3.Bucket(this, 'BidRequestExperimentStorage', {
@@ -29,11 +30,19 @@ export class MainStack extends cdk.Stack {
 
     // Creation of the Fargate producer layer
     const producer = new Producer(this, 'ProducerLayer', {
-      assetBasePath: basePath,
-      streamName: ingestion.streamName,
-      streamArn: ingestion.streamArn
+      assetBasePath,
+      streamName: ingestion.ingestionStream.deliveryStreamName || 'undefined',
+      streamArn: ingestion.ingestionStream.attrArn,
     });
     producer.node.addDependency(ingestion);
+
+
+    // Creation of the enhancement layer
+    const enhancement = new Enhancement(this, 'EnhancementLayer', {
+      assetBasePath,
+      inputStream: ingestion.ingestionStream,
+    });
+    enhancement.node.addDependency(ingestion);
 
     new cdk.CfnOutput(this, 'rawBucket', {
       exportName: 'rawBucket',

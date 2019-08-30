@@ -12,8 +12,7 @@ export interface IngestionProps {
 }
 
 export class Ingestion extends cdk.Construct {
-  public readonly streamName: string;
-  public readonly streamArn: string;
+  public readonly ingestionStream: firehose.CfnDeliveryStream;
 
   constructor(scope: cdk.Construct, id: string, props: IngestionProps) {
     super(scope, id);
@@ -26,7 +25,7 @@ export class Ingestion extends cdk.Construct {
 
     // Props details: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-kinesisfirehose-deliverystream-extendeds3destinationconfiguration.html
     const deliveryStreamName = 'BidRequestExperimentIngestionLayer';
-    const ingestionLayer = new firehose.CfnDeliveryStream(this, 'FirehoseDeliveryStream', {
+    this.ingestionStream = new firehose.CfnDeliveryStream(this, 'FirehoseDeliveryStream', {
       deliveryStreamName,
       deliveryStreamType: 'DirectPut',
       extendedS3DestinationConfiguration: {
@@ -41,8 +40,8 @@ export class Ingestion extends cdk.Construct {
         s3BackupMode: 'Disabled'
       }
     });
-
-    this.streamName = ingestionLayer.deliveryStreamName || deliveryStreamName;
-    this.streamArn = ingestionLayer.attrArn;
+    if (!this.ingestionStream .deliveryStreamName){
+      this.ingestionStream.deliveryStreamName = deliveryStreamName;
+    }
   }
 }

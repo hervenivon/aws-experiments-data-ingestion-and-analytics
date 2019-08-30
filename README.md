@@ -73,6 +73,12 @@ Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertisin
 $> head -5000000 train.txt > bidrequests.txt
 ```
 
+*Data fields*:
+
+- C0 (Integer) - Indicates if an ad was clicked (1) or not (0).
+- C1-C13 - 13 columns of integer features mostly representing count features.
+- C14-C39 - 26 columns of categorical features. The values of these features have been hashed onto 32 bits for anonymization purposes.
+
 ### Build the CDK application
 
 At the root of the repository:
@@ -93,17 +99,25 @@ This command will build the CDK application: compile Typescript code into Javasc
 
 ### Deploy Amazon QuickSight
 
-## Explore the demo
+## Exploring the demo
+
+Before starting the exploration of the demo, let's launch the producer. This will populate the demonstration with data.
 
 ### Launch the producer
 
-If you encounter the following error `"Unable to assume the service linked role. Please verify that the ECS service linked role exists."` please follow instructions [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html#create-service-linked-role) and create the linked service role:
+If you encounter the following error `"Unable to assume the service linked role. Please verify that the ECS service linked role exists."` while launching the producer, please follow instructions [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html#create-service-linked-role) and create the linked service role:
 
 ```bash
 $> aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 ```
 
-## Results
+### What has been deployed
+
+#### Kinesis Data analytics
+
+[In-application Streams and Pumps](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/streams-pumps.html)
+
+### Results
 
 ## Cost
 
