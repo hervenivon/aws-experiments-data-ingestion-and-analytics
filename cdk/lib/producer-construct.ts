@@ -107,6 +107,7 @@ export class Producer extends cdk.Construct {
       code: lambda.Code.asset(path.join(props.assetBasePath, 'producer-launcher')),
       handler: 'run_task.handler',
       environment: lambdaEnv,
+      logRetention: logs.RetentionDays.ONE_WEEK,
     });
     producerLauncher.addToRolePolicy(runTaskPolicyStatement);
     producerLauncher.addToRolePolicy(taskExecutionRolePolicyStatement);
@@ -126,6 +127,7 @@ export class Producer extends cdk.Construct {
       code: lambda.Code.asset(path.join(props.assetBasePath, 'producer-stoper')),
       handler: 'stop_task.handler',
       environment: lambdaEnv,
+      logRetention: logs.RetentionDays.ONE_WEEK,
     });
     producerStoper.addToRolePolicy(stopTaskPolicyStatement);
     producerStoper.addToRolePolicy(taskExecutionRolePolicyStatement);

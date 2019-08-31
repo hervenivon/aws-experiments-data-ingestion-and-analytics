@@ -116,6 +116,7 @@ $> aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 #### Kinesis Data analytics
 
 [In-application Streams and Pumps](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/streams-pumps.html)
+[Extend data with a referential](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html)
 
 ### Results
 

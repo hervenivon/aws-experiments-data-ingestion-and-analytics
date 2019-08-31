@@ -1,8 +1,10 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import cdk = require('@aws-cdk/core');
 import iam = require('@aws-cdk/aws-iam');
 import firehose = require('@aws-cdk/aws-kinesisfirehose');
 import analytics = require('@aws-cdk/aws-kinesisanalytics');
+import lambda = require('@aws-cdk/aws-lambda');
 import logs = require('@aws-cdk/aws-logs');
 import { Asset as S3Asset } from '@aws-cdk/aws-s3-assets';
 
@@ -38,15 +40,12 @@ export class Enhancement extends cdk.Construct {
       path: path.join(props.assetBasePath, 'data', 'referential.tsv')
     });
 
+    // Create a role for Kinesis Data Analytics
     const role = new iam.Role(this, 'KinesisAnalyticsRole', {
       assumedBy: new iam.ServicePrincipal('kinesisanalytics.amazonaws.com')
     });
 
-    const logGroup = new logs.LogGroup(this, 'KinesisAnalyticsLogGroup', {
-      retention: logs.RetentionDays.ONE_WEEK
-    });
-
-    // Grant Kinesis Data Analytics to Read inputStream
+    // Grant the Kinesis Data Analytics role to read the inputStream from the ingestion layer
     const readInputStreamPolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
@@ -58,26 +57,34 @@ export class Enhancement extends cdk.Construct {
       ]
     });
     role.addToPolicy(readInputStreamPolicyStatement);
-    // Grant task access to new uploaded assets
+
+    // Grant the Kinesis Data Analytics role access to new uploaded assets
     referentialData.grantRead(role);
 
+    // Create a lambda for destination of the application
+    const lambdaEnv = {};
+    const outputStream2Metrics = new lambda.Function(this, 'OutputStream2Metrics', {
+      runtime: lambda.Runtime.PYTHON_3_7,
+      code: lambda.Code.asset(path.join(props.assetBasePath, 'enhancement-metrics')),
+      handler: 'main.handler',
+      environment: lambdaEnv,
+      logRetention: logs.RetentionDays.ONE_WEEK,
+    });
+    // Grant the kinesis role to execute the lambda
+    outputStream2Metrics.grantInvoke(role);
+    // Grant the lambda to write CloudWatch metrics
+    outputStream2Metrics.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'cloudwatch:PutMetricData',
+      ],
+      resources: [
+        '*'
+      ]
+    }));
+
     const applicationName = 'EnhancementSQLApplication';
-    const sqlStatement = `
-CREATE OR REPLACE STREAM "enhanced_stream" (INGEST_TIME TIMESTAMP, AD VARCHAR(12));
-
-CREATE OR REPLACE PUMP "enhanced_stream_pump" AS INSERT INTO "enhanced_stream"
-      SELECT STREAM APPROXIMATE_ARRIVAL_TIME, "r"."REFERENCE" as "AD"
-      FROM "input_stream_001" LEFT JOIN "referential" as "r"
-      ON "input_stream_001"."AD" = "r"."CODE";
-
-CREATE OR REPLACE STREAM "count_stream" (AD VARCHAR(12), NBR INTEGER);
-
-CREATE OR REPLACE PUMP "count_stream_pump" AS INSERT INTO "count_stream"
-    SELECT STREAM AD, COUNT(AD)
-        FROM "enhanced_stream"
-        GROUP BY AD,
-            STEP("enhanced_stream".ROWTIME BY INTERVAL '30' SECOND);
-`;
+    const sqlStatement = fs.readFileSync(path.join(props.assetBasePath, 'enhancement', 'enhancement.sql'), 'utf8');
     const sqlApplication = new analytics.CfnApplication(this, 'Enhancement/SQLApplication', {
       applicationName,
       applicationDescription: 'Count successful and unsuccessful bidrequests and call AWS lambda to push those metrics to AWS CloudWatch',
@@ -104,6 +111,7 @@ CREATE OR REPLACE PUMP "count_stream_pump" AS INSERT INTO "count_stream"
       applicationCode: sqlStatement,
     });
 
+    // Connecting a S3 reference file to the SQL Application
     const sqlApplicationReference = new analytics.CfnApplicationReferenceDataSource(this, 'Enhancement/SQLApplicationRefDataSource', {
       applicationName,
       referenceDataSource: {
@@ -132,5 +140,22 @@ CREATE OR REPLACE PUMP "count_stream_pump" AS INSERT INTO "count_stream"
       }
     });
     sqlApplicationReference.node.addDependency(sqlApplication);
+
+    // Connection a lambda as a destination to the SQL Application
+    const sqlApplicationOutput = new analytics.CfnApplicationOutput(this, 'Enhancement/SQLApplicationOutput', {
+      applicationName,
+      output: {
+        destinationSchema: {
+          recordFormatType: 'JSON'
+        },
+        name: 'count_stream',
+        lambdaOutput: {
+          resourceArn: outputStream2Metrics.functionArn,
+          roleArn: role.roleArn
+        }
+      }
+    });
+    sqlApplicationOutput.node.addDependency(sqlApplication);
+    sqlApplicationOutput.node.addDependency(outputStream2Metrics);
   }
 }
