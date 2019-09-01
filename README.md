@@ -260,9 +260,10 @@ Note: a `cdk diff` command might take up to the minute. The main reason here is 
 
 ## Clean up
 
-Destroy the CDK application:
+Delete data of the Raw Data Bucket (output `rawBucket` of the stack) and destroy the CDK application:
 
 ```bash
+$> aws s3 rm s3://dataexperimentstack-bidrequestexperimentstoragecc-XXXXXXXXXXXXX --recursive
 $> cdk destroy
 ```
 
