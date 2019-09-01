@@ -113,9 +113,12 @@ To deploy the CDK application:
 $> cdk deploy
 ```
 
-This command will generate a cloud formation stack that will be pushed to your configured account. This will create 60 resources (Roles, Streams, Lambda functions, Container Registry, etc.)
+This command will generate a cloud formation stack that will be pushed to your configured account. This will create around 60 resources (Roles, Streams, Lambda functions, Container Registry, etc.) and will also upload prepared data to the AWS Cloud.
 
-Note: if you change parameters or code of the CloudWatch's dashboard, you must delete it in the console before pushing the update with `cdk`.
+Actual limitations:
+
+- If you change parameters or code of the CloudWatch's dashboard, you must delete it in the console before deploying the update with `cdk`.
+- The Cloudwatch's dashboard is configured for certain input and output ids of the Kinesis data analytics application. If the deployed dashboard doesn't work, please check the current `inputId` and `outpuId` of the Kinesis data analytics application (with: `aws kinesisanalytics describe-application --application-name EnhancementSQLApplication`), update the `./cdk/lib/visualization-construct.ts` accordingly and deploy the CDK application.
 
 ### Deploy Amazon QuickSight
 
