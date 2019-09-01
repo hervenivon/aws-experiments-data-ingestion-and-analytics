@@ -20,16 +20,25 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 
 - [Architecture overview](#architecture-overview)
 - [Pre requisites](#pre-requisites)
-- [Deploy](#deploy)
+- [Deployment of the experiment](#deployment-of-the-experiment)
   - [Download necessary Data](#download-necessary-data)
   - [Build the CDK application](#build-the-cdk-application)
   - [Deploy the stack and upload the data](#deploy-the-stack-and-upload-the-data)
   - [Deploy Amazon QuickSight](#deploy-amazon-quicksight)
-- [Results](#results)
+    - [Preparing the Manifest file](#preparing-the-manifest-file)
+    - [Signing\-up](#signing-up)
+    - [Creating a dataset](#creating-a-dataset)
+- [Exploring the demo](#exploring-the-demo)
+  - [Launch the producer](#launch-the-producer)
+  - [What has been deployed](#what-has-been-deployed)
+    - [Kinesis Data analytics](#kinesis-data-analytics)
+  - [Results](#results)
 - [Cost](#cost)
 - [Solutions alternatives](#solutions-alternatives)
 - [Develop](#develop)
-- [Cleanup](#cleanup)
+  - [Start watching for changes](#start-watching-for-changes)
+  - [Useful commands](#useful-commands)
+- [Clean up](#clean-up)
 - [Inspiring source of information](#inspiring-source-of-information)
 
 ## Architecture overview
@@ -54,7 +63,7 @@ For this experiment you will need the following:
 
 If this is the first time you deploy a CDK application in an AWS environment, you need to bootstrap it: `cdk bootstrap`. Please take a look at the bootstrap section of the [CDK workshop](https://cdkworkshop.com/20-typescript/20-create-project/500-deploy.html).
 
-## Deploy
+## Deployment of the experiment
 
 The deployment is a 4 steps process:
 
@@ -97,13 +106,79 @@ This command will build the CDK application: compile Typescript code into Javasc
 
 ### Deploy the stack and upload the data
 
-Note: if you change parameters of the CloudWatch's dashboard, you must delete it in the console before pushing the update with `cdk`.
+To deploy the CDK application:
+
+```bash
+$> cdk deploy
+```
+
+This command will generate a cloud formation stack that will be pushed to your configured account. This will create 60 resources (Roles, Streams, Lambda functions, Container Registry, etc.)
+
+Note: if you change parameters or code of the CloudWatch's dashboard, you must delete it in the console before pushing the update with `cdk`.
 
 ### Deploy Amazon QuickSight
 
-Sign-up: https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html.
+In order to deploy the Amazon QuickSight dashboard, you must do the following:
 
-If you have already signed up for Amazon QuickSight or you haven't selected this experiment bucket during the signup, please allow QuickSight to [read the bucket](https://docs.aws.amazon.com/quicksight/latest/user/managing-permissions.html) of this experiment. You can find the bucket name in the output of the `cdk deploy` command line or from the `Cloud Formation` console.
+1. Preparing a `manifest.json` file
+2. Signing-up
+3. Creating a dataset
+
+A pre requisite to the deployment of Amazon QuickSight using a S3 bucket is that the data actually exist in the bucket. So, please follow this part once you have launch the data producer.
+
+#### Preparing the Manifest file
+
+On your local computer, edit the `manifest.json` file in the `visualization` folder. Use the output `DataExperimentStack.VisualizationLayerQuickSightManifestFile` of the deployed stack or replace `XXXXXXXXXXXXX` with the URi of you bucket in the provided `manifest.json` file.
+
+For more information on the Manifest file, please have a look to [Supported Formats for Amazon S3 Manifest Files](https://docs.aws.amazon.com/quicksight/latest/user/supported-manifest-file-format.html).
+
+#### Signing-up
+
+If you have already [signed up](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html.) for Amazon QuickSight or you haven't selected this experiment bucket during the sign-up, please allow QuickSight to [read the bucket](https://docs.aws.amazon.com/quicksight/latest/user/managing-permissions.html) of this experiment. You can find the bucket name in the output of the `cdk deploy` command line or from the `Cloud Formation` console.
+
+#### Creating a dataset
+
+In this section you are going to create a [new QuickSight dataset using Amazon S3 files](https://docs.aws.amazon.com/quicksight/latest/user/create-a-data-set-s3.html).
+
+From the QuickSight home page:
+
+- Click on "Manage Data"
+- Click on "New Data Set"
+- Select "S3"
+- Enter a "Data Source Name" and select your local `manifest.json` file.
+
+![New S3 data source](resources/quicksight-newS3DataSource.png)
+
+- Click "Connect"
+
+You should see the following screen:
+
+![Finish Data Set Creation](resources/quicksight-finishDataSetCreation.png)
+
+Your good to go for the deployment. For further QuickSight exploration. See [Exploring the demo](#exploring-the-demo).
+
+Once the import is finished, you will get the following screen:
+
+![Import Complete](resources/quicksight-importComplete.png)
+
+Note: Amazon QuickSight has certain [Data Source Limits](https://docs.aws.amazon.com/quicksight/latest/user/data-source-limits.html). In particular, the total size of the files specified in the manifest file can't exceed 25 GB, or you can't exceed 1,000 files. Therefore, as we are pointing to row data, we should only indicate a particular day in the `manifest.json` file. For instance:
+
+```json
+{
+  "fileLocations": [
+    {
+      "URIPrefixes": [
+        "https://s3.us-east-1.amazonaws.com/dataexperimentstack-bidrequestexperimentstoragecc-XXXXXXXXXXXXX/raw-data/2019/09/01/"
+      ]
+    }
+  ],
+  "globalUploadSettings": {
+    "format": "TSV",
+    "delimiter": "\t",
+    "containsHeader": "false"
+  }
+}
+```
 
 ## Exploring the demo
 
