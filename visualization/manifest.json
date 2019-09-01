@@ -1,0 +1,14 @@
+{
+  "fileLocations": [
+    {
+      "URIPrefixes": [
+        "https://s3.us-east-1.amazonaws.com/dataexperimentstack-bidrequestexperimentstoragecc-XXXXXXXXXXXXX/raw-data/2019/09/01/"
+      ]
+    }
+  ],
+  "globalUploadSettings": {
+    "format": "TSV",
+    "delimiter": "\t",
+    "containsHeader": "false"
+  }
+}

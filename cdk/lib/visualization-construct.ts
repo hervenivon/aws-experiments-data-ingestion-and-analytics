@@ -4,7 +4,8 @@ import { GraphWidget } from '@aws-cdk/aws-cloudwatch';
 import { CfnMaintenanceWindow } from '@aws-cdk/aws-ssm';
 
 export interface VisualizationProps {
-  kinesisApplicationName: string
+  kinesisApplicationName: string,
+  rawBucketURI: string
 }
 
 export class Visualization extends cdk.Construct {
@@ -84,9 +85,26 @@ export class Visualization extends cdk.Construct {
       width: 9,
       height: 3,
     });
-    statsWidget.position(12, 0);
+    statsWidget.position(13, 0);
 
     dashboard.addWidgets(graphWidget);
     dashboard.addWidgets(statsWidget);
+
+
+    const quicksightManifestFileDataSource = {
+      fileLocations: [{
+        URIPrefixes: [props.rawBucketURI + '/raw-data/YYYY/MM/DD/']
+      }],
+      globalUploadSettings: {
+        format: 'TSV',
+        delimiter: '\t',
+        containsHeader: false
+      }
+    }
+
+    new cdk.CfnOutput(this, 'QuickSightManifestFile', {
+      exportName: 'QuickSightManifestFile',
+      value: JSON.stringify(quicksightManifestFileDataSource),
+    });
   }
 }

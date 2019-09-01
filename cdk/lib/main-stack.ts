@@ -46,7 +46,8 @@ export class MainStack extends cdk.Stack {
     enhancement.node.addDependency(ingestion);
 
     const visualization = new Visualization(this, 'VisualizationLayer', {
-      kinesisApplicationName: enhancement.applicationName
+      kinesisApplicationName: enhancement.applicationName,
+      rawBucketURI: rawBucket.urlForObject()
     });
 
     // Generate additional Cloud Formation outputs
