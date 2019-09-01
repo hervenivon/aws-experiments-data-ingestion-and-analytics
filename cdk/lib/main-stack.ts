@@ -10,6 +10,7 @@ import { Asset as S3Asset } from '@aws-cdk/aws-s3-assets';
 import { Producer } from './producer-construct';
 import { Ingestion } from './ingestion-construct';
 import { Enhancement } from './enhancement-construct';
+import { Visualization } from './visualization-construct';
 
 export class MainStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -44,6 +45,11 @@ export class MainStack extends cdk.Stack {
     });
     enhancement.node.addDependency(ingestion);
 
+    const visualization = new Visualization(this, 'VisualizationLayer', {
+      kinesisApplicationName: enhancement.applicationName
+    });
+
+    // Generate additional Cloud Formation outputs
     new cdk.CfnOutput(this, 'rawBucket', {
       exportName: 'rawBucket',
       value: rawBucket.bucketName,

@@ -97,7 +97,13 @@ This command will build the CDK application: compile Typescript code into Javasc
 
 ### Deploy the stack and upload the data
 
+Note: if you change parameters of the CloudWatch's dashboard, you must delete it in the console before pushing the update with `cdk`.
+
 ### Deploy Amazon QuickSight
+
+Sign-up: https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html.
+
+If you have already signed up for Amazon QuickSight or you haven't selected this experiment bucket during the signup, please allow QuickSight to [read the bucket](https://docs.aws.amazon.com/quicksight/latest/user/managing-permissions.html) of this experiment. You can find the bucket name in the output of the `cdk deploy` command line or from the `Cloud Formation` console.
 
 ## Exploring the demo
 

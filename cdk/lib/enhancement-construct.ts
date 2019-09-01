@@ -33,9 +33,12 @@ export interface EnhancementProps {
 }
 
 export class Enhancement extends cdk.Construct {
+  public readonly applicationName: string;
+
   constructor(scope: cdk.Construct, id: string, props: EnhancementProps) {
     super(scope, id);
 
+    this.applicationName = 'EnhancementSQLApplication';
     const referentialData = new S3Asset(this, 'ReferentialData', {
       path: path.join(props.assetBasePath, 'data', 'referential.tsv')
     });
@@ -83,10 +86,9 @@ export class Enhancement extends cdk.Construct {
       ]
     }));
 
-    const applicationName = 'EnhancementSQLApplication';
     const sqlStatement = fs.readFileSync(path.join(props.assetBasePath, 'enhancement', 'enhancement.sql'), 'utf8');
     const sqlApplication = new analytics.CfnApplication(this, 'Enhancement/SQLApplication', {
-      applicationName,
+      applicationName: this.applicationName,
       applicationDescription: 'Count successful and unsuccessful bidrequests and call AWS lambda to push those metrics to AWS CloudWatch',
       inputs: [{
         inputSchema: {
@@ -113,7 +115,7 @@ export class Enhancement extends cdk.Construct {
 
     // Connecting a S3 reference file to the SQL Application
     const sqlApplicationReference = new analytics.CfnApplicationReferenceDataSource(this, 'Enhancement/SQLApplicationRefDataSource', {
-      applicationName,
+      applicationName: this.applicationName,
       referenceDataSource: {
         referenceSchema: {
           recordColumns: [
@@ -143,7 +145,7 @@ export class Enhancement extends cdk.Construct {
 
     // Connection a lambda as a destination to the SQL Application
     const sqlApplicationOutput = new analytics.CfnApplicationOutput(this, 'Enhancement/SQLApplicationOutput', {
-      applicationName,
+      applicationName: this.applicationName,
       output: {
         destinationSchema: {
           recordFormatType: 'JSON'
