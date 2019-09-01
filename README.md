@@ -30,6 +30,7 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
     - [Creating a dataset](#creating-a-dataset)
 - [Exploring the demo](#exploring-the-demo)
   - [Launch the producer](#launch-the-producer)
+  - [Launch the Kinesis Data Analytics Application](#launch-the-kinesis-data-analytics-application)
   - [What has been deployed](#what-has-been-deployed)
     - [Kinesis Data analytics](#kinesis-data-analytics)
   - [Results](#results)
@@ -186,10 +187,36 @@ Before starting the exploration of the demo, let's launch the producer. This wil
 
 ### Launch the producer
 
-If you encounter the following error `"Unable to assume the service linked role. Please verify that the ECS service linked role exists."` while launching the producer, please follow instructions [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html#create-service-linked-role) and create the linked service role:
+As part of the demo, we have deployed a lambda function to simplify the launch of the producer running on AWS Fargate.
+
+To launch the producer execute the command line that you get as an output of the deployed demo in the output named `DataExperimentStack.ProducerLayerlaunchProducerOnMacOS` or `DataExperimentStack.ProducerLayerlaunchProducerOnLinux`. On MacOS, it will look like this.
+
+```bash
+$> aws lambda invoke --function-name arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:DataExperimentStack-ProducerLayerProducerLauncherD-XXXXXXXXXXXXX --payload '{}' /tmp/out --log-type Tail --query 'LogResult' --output text | base64 -D
+```
+
+As an output you get the [ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) of the running task.
+
+Note: If you encounter the following error `"Unable to assume the service linked role. Please verify that the ECS service linked role exists."` while launching the producer, please follow instructions [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html#create-service-linked-role) and create the linked service role:
 
 ```bash
 $> aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
+```
+
+### Launch the Kinesis Data Analytics Application
+
+In order to get enhanced results and real time metrics, you need to also launch the Kinesis Data Analytics Application. To do so, execute the following command:
+
+```bash
+$> aws kinesisanalytics start-application --application-name EnhancementSQLApplication --input-configurations Id=1.1,InputStartingPositionConfiguration={InputStartingPosition=LAST_STOPPED_POINT}
+```
+
+Depending on the number of deployments and changes you made to the following CDK application, the input Id of the Kinesis Data Analytics application may change. You can get the right `InputId` with the following command: `aws kinesisanalytics describe-application --application-name EnhancementSQLApplication`.
+
+Note: you can also stop the application with the AWS CLI with the following command line:
+
+```bash
+$> aws kinesisanalytics stop-application --application-name EnhancementSQLApplication
 ```
 
 ### What has been deployed

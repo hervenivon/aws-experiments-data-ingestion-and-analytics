@@ -39,6 +39,12 @@ export class Enhancement extends cdk.Construct {
     super(scope, id);
 
     this.applicationName = 'EnhancementSQLApplication';
+
+    new cdk.CfnOutput(this, 'EnhancementKinesisApplicationName', {
+      exportName: 'EnhancementKinesisApplicationName',
+      value: this.applicationName,
+    });
+
     const referentialData = new S3Asset(this, 'ReferentialData', {
       path: path.join(props.assetBasePath, 'data', 'referential.tsv')
     });
