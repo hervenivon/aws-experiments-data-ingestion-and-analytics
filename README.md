@@ -154,20 +154,20 @@ In this section you are going to create a [new QuickSight dataset using Amazon S
 
 From the QuickSight home page:
 
-- Click on "Manage Data"
-- Click on "New Data Set"
-- Select "S3"
-- Enter a "Data Source Name" and select your local `manifest.json` file.
+1. Click on "Manage Data"
+2. Click on "New Data Set"
+3. Select "S3"
+4. Enter a "Data Source Name" and select your local `manifest.json` file.
 
 ![New S3 data source](resources/quicksight-newS3DataSource.png)
 
-- Click "Connect"
+5. Click "Connect"
 
 You should see the following screen:
 
 ![Finish Data Set Creation](resources/quicksight-finishDataSetCreation.png)
 
-Your good to go for the deployment. For further QuickSight exploration. See [Exploring the demo](#exploring-the-demo).
+Your good to go with the QuickSight deployment. For an exploration of Quicksight for this experiment, see [Exploring the demo](#exploring-the-demo).
 
 Once the import is finished, you will get the following screen:
 
