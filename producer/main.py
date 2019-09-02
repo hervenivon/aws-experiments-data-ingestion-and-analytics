@@ -39,7 +39,6 @@ def main():
     firehose = boto3.client('firehose')
     with open(local_file) as f:
         for line in f:
-            print(line, end='')
             binary_string = str.encode(line)
             SendData(firehose, stream_name, binary_string)
 
