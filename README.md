@@ -44,7 +44,7 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 
 ## Architecture overview
 
-1. Producer: AWS Fargate pushes data from the TSV "mock" file to Amazon Kinesis Data Firehose
+1. Producer: AWS Fargate simulates bid request pushes to Amazon Kinesis Data Firehose from the TSV "mock" file
 2. Ingestion: Amazon Kinesis Data Firehose ingests the data into Amazon S3
 3. Enhancement: Amazon Kinesis Data Analytics
     - enhances the data with catalog stored in Amazon s3
@@ -225,7 +225,67 @@ Note: you can also stop the application with the AWS CLI with the following comm
 $> aws kinesisanalytics stop-application --application-name EnhancementSQLApplication
 ```
 
-### What has been deployed
+### Producer
+
+In this experiment, the data are going to be pushed to Kinesis from a producer based on a python program running into a container on AWS Fargate.
+
+The key components of the producer are:
+
+- A virtual private cloud to host your producer (not detailed here),
+- A lambda function that ease the launch of the producer,
+- A container registry to host the Docker image of the producer (not detailed here)
+- A task definition which defines how to run the producer,
+
+You can get a list of all resources deployed related to the producer in the Cloud Formation console for the stack `DataExperimentStack` and searching for "Producer" in the resources search field.
+
+#### Lambda function
+
+AWS Lambda is a compute service that lets you run code without provisioning or managing servers.
+
+In the present case, we use AWS Lambda to launch the Fargate Task from all the necessary information provided at deployed time by the CDK application:
+
+- The [ECS cluster](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_clusters.html)
+- The private subnets of the newly launched [VPC](https://docs.amazonaws.cn/en_us/vpc/latest/userguide/what-is-amazon-vpc.html)
+- The [task definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
+
+To access the deployed lambda function:
+
+1. Go to your AWS Account,
+1. Search for Lambda,
+1. Look for a function name starting with `"DataExperimentStack-ProducerLayerProducerLauncher"`
+1. Click on the function name
+
+You will see the following screen:
+
+![Lambda function](resources/lambda.png)
+
+If you scroll down the page, you will notably see the "Environment variables" that are provided to the lambda function at deployment time and necessary to launch the Fargate Task.
+
+![Lambda function environment variables](resources/lambda-environmentVariables.png)
+
+#### AWS Fargate
+
+AWS Fargate is a compute engine for [Amazon ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html) that allows you to run containers without having to manage servers or clusters.
+
+In the present case, we leverage AWS Fargate to host the program that will continuously - until we stop it or it has pushed all records - push records to the Kinesis Firehose ingestion stream.
+
+1. Search for the ECS service,
+2. Click on "Clusters" on the left panel
+3. Search for "Producer"
+
+![Producer ECS cluster](resources/ecs-cluster.png)
+
+4. Click on the cluster name, then on the "Task" tabulation. You get the following screen.
+
+![Producer ECS cluster details](resources/ecs-clusterDetails.png)
+
+5. Click on the "Running" task
+
+![Running Task](resources/ecs-runningTask.png)
+
+From here, you can check the status of the task and access logs.
+
+**Troubleshooting**: if you want to check that your producer is effectively and successfully sending events to your ingestion layer, you can look at the logs of your Fargate task. If everything is going well, you will read messages like `"SUCCESS: your request ID is : ebc2c2b9-c94a-b850-be24-30ee9c33a5e7"`.
 
 #### Kinesis Data analytics
 
