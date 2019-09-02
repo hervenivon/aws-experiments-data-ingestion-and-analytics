@@ -44,14 +44,17 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 
 ## Architecture overview
 
-1. Producer: AWS Fargate push data from the CSV file to Amazon Kinesis Data Firehose
-2. Ingestion: Amazon Kinesis Data Firehose ingests the data
-3. Enhancement: Amazon Kinesis Data Analytics:
+1. Producer: AWS Fargate pushes data from the TSV "mock" file to Amazon Kinesis Data Firehose
+2. Ingestion: Amazon Kinesis Data Firehose ingests the data into Amazon S3
+3. Enhancement: Amazon Kinesis Data Analytics
     - enhances the data with catalog stored in Amazon s3
-    - triggers a AWS Lambda function to store real time measures in Amazon CloudWatch
+    - computes counters from the ingestion stream of records
+    - triggers a AWS Lambda function to store real time counts in Amazon CloudWatch
 4. Visualization:
     - Amazon CloudWatch allows visualization of custom near real-time metrics
-    - Amazon Quick Sights allows reporting on enhanced data stored in Amazon S3
+    - Amazon Quick Sights allows reporting on raw data stored in Amazon S3
+
+![Architecture](resources/architecture.png)
 
 ## Pre requisites
 
