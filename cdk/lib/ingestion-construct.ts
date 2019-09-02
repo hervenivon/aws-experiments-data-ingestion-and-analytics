@@ -36,7 +36,7 @@ export class Ingestion extends cdk.Construct {
         },
         roleArn: role.roleArn,
         prefix: 'raw-data/',
-        compressionFormat: 'UNCOMPRESSED',
+        compressionFormat: 'GZIP',
         s3BackupMode: 'Disabled'
       }
     });
