@@ -21,16 +21,16 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 - [Architecture overview](#architecture-overview)
 - [Pre requisites](#pre-requisites)
 - [Deployment of the experiment](#deployment-of-the-experiment)
-  - [Download necessary Data](#download-necessary-data)
-  - [Build the CDK application](#build-the-cdk-application)
-  - [Deploy the stack and upload the data](#deploy-the-stack-and-upload-the-data)
-  - [Deploy Amazon QuickSight](#deploy-amazon-quicksight)
+  - [Downloading necessary Data](#downloading-necessary-data)
+  - [Building the CDK application](#building-the-cdk-application)
+  - [Deploying the stack and upload the data](#deploying-the-stack-and-upload-the-data)
+  - [Deploying Amazon QuickSight](#deploying-amazon-quicksight)
     - [Preparing the Manifest file](#preparing-the-manifest-file)
     - [Signing\-up](#signing-up)
     - [Creating a dataset](#creating-a-dataset)
 - [Exploring the demo](#exploring-the-demo)
-  - [Launch the producer](#launch-the-producer)
-  - [Launch the Kinesis Data Analytics Application](#launch-the-kinesis-data-analytics-application)
+  - [Launching the producer](#launching-the-producer)
+  - [Launching the Kinesis Data Analytics Application](#launching-the-kinesis-data-analytics-application)
   - [Producer](#producer)
     - [Lambda function](#lambda-function)
     - [AWS Fargate](#aws-fargate)
@@ -81,7 +81,7 @@ The deployment is a 4 steps process:
 3. Deploy the stack and upload the data
 4. Deploy Amazon QuickSight
 
-### Download necessary Data
+### Downloading necessary Data
 
 Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz) and extract the `zip` file to the `data` directory.
 
@@ -97,7 +97,7 @@ $> head -5000000 train.txt > bidrequests.txt
 - C1-C13 - 13 columns of integer features mostly representing count features.
 - C14-C39 - 26 columns of categorical features. The values of these features have been hashed onto 32 bits.
 
-### Build the CDK application
+### Building the CDK application
 
 At the root of the repository:
 
@@ -113,7 +113,7 @@ $> npm run build
 
 This command will build the CDK application: compile Typescript code into Javascript.
 
-### Deploy the stack and upload the data
+### Deploying the stack and upload the data
 
 To deploy the CDK application:
 
@@ -128,7 +128,7 @@ Actual limitations:
 - If you change parameters or code of the CloudWatch's dashboard, you must delete it in the console before deploying the update with `cdk`.
 - The Cloudwatch's dashboard is configured for certain input and output ids of the Kinesis data analytics application. If the deployed dashboard doesn't work, please check the current `inputId` and `outpuId` of the Kinesis data analytics application (with: `aws kinesisanalytics describe-application --application-name EnhancementSQLApplication`), update the `./cdk/lib/visualization-construct.ts` accordingly and deploy the CDK application.
 
-### Deploy Amazon QuickSight
+### Deploying Amazon QuickSight
 
 In order to deploy the Amazon QuickSight dashboard, you must do the following:
 
@@ -196,7 +196,7 @@ Note: Amazon QuickSight has certain [Data Source Limits](https://docs.aws.amazon
 
 Before starting the exploration of the demo, let's launch the producer and application. This will populate the demonstration with data and we will have something to look at.
 
-### Launch the producer
+### Launching the producer
 
 As part of the demo, we have deployed a lambda function to simplify the launch of the producer running on AWS Fargate.
 
@@ -214,7 +214,7 @@ Note: If you encounter the following error `"Unable to assume the service linked
 $> aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 ```
 
-### Launch the Kinesis Data Analytics Application
+### Launching the Kinesis Data Analytics Application
 
 In order to get enhanced results and real time metrics, you need to also launch the Kinesis Data Analytics Application. To do so, execute the following command:
 
