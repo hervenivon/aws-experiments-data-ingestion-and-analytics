@@ -80,17 +80,17 @@ The deployment is a 4 steps process:
 
 Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz), extract it to the `data` directory.
 
-*Important*: we don't want to upload the whole dataset, therefore we are taking a small amount of it with the following command in the `data` directory:
+**Important**: we don't want to upload the whole dataset, therefore we are taking a small amount of it with the following command in the `data` directory:
 
 ```bash
 $> head -5000000 train.txt > bidrequests.txt
 ```
 
-*Data fields*:
+**Data fields** explanation:
 
 - C0 (Integer) - Indicates if an ad was clicked (1) or not (0).
 - C1-C13 - 13 columns of integer features mostly representing count features.
-- C14-C39 - 26 columns of categorical features. The values of these features have been hashed onto 32 bits for anonymization purposes.
+- C14-C39 - 26 columns of categorical features. The values of these features have been hashed onto 32 bits.
 
 ### Build the CDK application
 
