@@ -78,7 +78,7 @@ The deployment is a 4 steps process:
 
 ### Download necessary Data
 
-Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz), extract it to the `data` directory.
+Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz) and extract the `zip` file to the `data` directory.
 
 **Important**: we don't want to upload the whole dataset, therefore we are taking a small amount of it with the following command in the `data` directory:
 
@@ -189,7 +189,7 @@ Note: Amazon QuickSight has certain [Data Source Limits](https://docs.aws.amazon
 
 ## Exploring the demo
 
-Before starting the exploration of the demo, let's launch the producer. This will populate the demonstration with data.
+Before starting the exploration of the demo, let's launch the producer and application. This will populate the demonstration with data and we will have something to look at.
 
 ### Launch the producer
 
