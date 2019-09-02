@@ -1,4 +1,4 @@
-# aws-experiments-data-ingestion-and-analytics
+# AWS Serverless Data Lake for Bid Requests
 
 This experiment simulates data ingestion of bid requests to a serverless data lake and data analytics pipeline deployed on AWS.
 
@@ -31,9 +31,11 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 - [Exploring the demo](#exploring-the-demo)
   - [Launch the producer](#launch-the-producer)
   - [Launch the Kinesis Data Analytics Application](#launch-the-kinesis-data-analytics-application)
-  - [What has been deployed](#what-has-been-deployed)
+  - [Producer](#producer)
+    - [Lambda function](#lambda-function)
+    - [AWS Fargate](#aws-fargate)
+  - [Ingestion](#ingestion)
     - [Kinesis Data analytics](#kinesis-data-analytics)
-  - [Results](#results)
 - [Cost](#cost)
 - [Solutions alternatives](#solutions-alternatives)
 - [Develop](#develop)
@@ -227,7 +229,7 @@ $> aws kinesisanalytics stop-application --application-name EnhancementSQLApplic
 
 ### Producer
 
-In this experiment, the data are going to be pushed to Kinesis from a producer based on a python program running into a container on AWS Fargate.
+In this experiment, the data are pushed to Kinesis from a producer layer based on a python program running into a container on AWS Fargate.
 
 The key components of the producer are:
 
@@ -287,12 +289,12 @@ From here, you can check the status of the task and access logs.
 
 **Troubleshooting**: if you want to check that your producer is effectively and successfully sending events to your ingestion layer, you can look at the logs of your Fargate task. If everything is going well, you will read messages like `"SUCCESS: your request ID is : ebc2c2b9-c94a-b850-be24-30ee9c33a5e7"`.
 
+### Ingestion
+
 #### Kinesis Data analytics
 
 [In-application Streams and Pumps](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/streams-pumps.html)
 [Extend data with a referential](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html)
-
-### Results
 
 ## Cost
 
