@@ -4,17 +4,19 @@ This experiment simulates data ingestion of bid requests to a serverless data la
 
 Services in use:
 
-- [AWS Fargate](https://aws.amazon.com/fargate/) for simulating bid requests,
 - [Amazon Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/) for data ingestion,
 - [Amazon Kinesis Data Analytics](https://aws.amazon.com/kinesis/data-analytics/) for data enhancement,
 - [Amazon S3](https://aws.amazon.com/s3/) for data storage,
 - [AWS Lambda](https://aws.amazon.com/lambda/) for publishing near real time measures,
 - [Amazon QuickSight](https://aws.amazon.com/quicksight/) for data visualization,
-- [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) for near realtime data visualization.
+- [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) for near real time data visualization,
+- [AWS Fargate](https://aws.amazon.com/fargate/) for simulating bid requests.
 
 [Data used](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz) for this experiment are coming from the [Kaggle Display Advertising Challenge Dataset](https://labs.criteo.com/2014/02/download-kaggle-display-advertising-challenge-dataset/) published in 2014 by [Criteo](https://www.kaggle.com/c/criteo-display-ad-challenge/data). If you are curious or if you want to push the Criteo Dataset further, you can refer to their 2015 [announcement](https://labs.criteo.com/2015/03/criteo-releases-its-new-dataset/) and the related [download](https://labs.criteo.com/2013/12/download-terabyte-click-logs-2/).
 
 Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) to deploy the required infrastructure.
+
+![Overview of the real time CloudWatch dashboard](resources/cloudWatch-dashboard.gif)
 
 ## Table of content
 
@@ -42,9 +44,9 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
     - [S3](#s3)
   - [Enhancement](#enhancement)
     - [Architecture overview of the enhancement layer](#architecture-overview-of-the-enhancement-layer)
-    - [Kinesis Data analytics](#kinesis-data-analytics)
     - [S3 for referential data](#s3-for-referential-data)
-    - [AWS Lambda](#aws-lambda)
+    - [Kinesis Data analytics SQL application](#kinesis-data-analytics-sql-application)
+    - [AWS Lambda as a destination for a kinesis data analytics](#aws-lambda-as-a-destination-for-a-kinesis-data-analytics)
   - [Visualization](#visualization)
     - [Architecture overview of the visualization layer](#architecture-overview-of-the-visualization-layer)
     - [CloudWatch](#cloudwatch)
@@ -357,14 +359,102 @@ Firehose has been configured to push all data in the `"raw-data"` folder in S3. 
 
 ![#### Architecture overview of the enhancement layer](resources/architecture-enhancement.png)
 
-#### Kinesis Data analytics
+The data ingested are processed through an SQL application that enhances the data from a referential stored on S3 and compute analytics on top of the initial ingestion stream. The results of this application are pushed as custom metrics in AWS CloudWatch. This enhancement layer is made of :
 
-[In-application Streams and Pumps](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/streams-pumps.html)
-[Extend data with a referential](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html)
+- A Kinesis Data Analytics [SQL application](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works.html),
+- A [Lambda function](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works-output-lambda.html) that push the results of the Data Analytics application to CloudWatch [custom metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html),
+- A S3 object that represents a table to [add reference data](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html) to the ingestion stream.
 
 #### S3 for referential data
 
-#### AWS Lambda
+S3 is used to store the referential file that is then connected to the Kinesis application.
+
+1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
+2. Open the `"EnhancementSQLApplication"` in the Kinesis Analytics Application card.
+
+![EnhancementSQLApplication configuration](resources/analytics-application.png)
+
+3. You can see the Amazon S3 Object as a reference data and its associated "In-application reference table name" that can be used in the SQL application (see [below](#kinesis-data-analytics-sql-application))
+
+See [Example: Adding Reference Data to a Kinesis Data Analytics Application](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html) for further details on the topic.
+
+#### Kinesis Data analytics SQL application
+
+A Kinesis Data Analytics application continuously reads and processes streaming data in real time. You write application code using SQL or Java to process the incoming streaming data and produce output(s). In our case, we use an SQL application.
+
+Kinesis Data Analytics then writes the output to a configured destination. The following diagram illustrates a typical application architecture.
+
+![Kinesis Analytics Application](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/images/kinesis-app.png)
+
+This experiment leverages as a:
+
+- Source:
+  - The in-application input stream from the ingestion layer
+  - A reference table (see [above](#s3-for-referential-data))
+- Real-time analytics:
+  - SQL code
+  - 2 in-application output streams
+- Destination:
+  - A [lambda function](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works-output-lambda.html)
+
+1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
+2. Open the `"EnhancementSQLApplication"` in the Kinesis Analytics Application card.
+3. You can see the Firehose delivery stream a streaming data and its associated "In-application reference table name" that can be used in the SQL application
+4. Click "Go to SQL results"
+
+![SQL editor](resources/analytics-SQLeditor.png)
+
+From here you can navigate the application, edit the SQL, see incoming data, and real-time computed analytics.
+
+SQL code:
+
+```sql
+CREATE OR REPLACE STREAM "enhanced_stream" (INGESTION_TIME BIGINT, AD VARCHAR(12));
+
+CREATE OR REPLACE PUMP "enhanced_stream_pump" AS INSERT INTO "enhanced_stream"
+      SELECT STREAM UNIX_TIMESTAMP(APPROXIMATE_ARRIVAL_TIME), "r"."REFERENCE" as "AD"
+      FROM "input_stream_001" LEFT JOIN "referential" as "r"
+      ON "input_stream_001"."AD" = "r"."CODE";
+
+CREATE OR REPLACE STREAM "count_stream" (AD VARCHAR(12), INGESTION_TIME BIGINT, NBR INTEGER);
+
+CREATE OR REPLACE PUMP "count_stream_pump" AS INSERT INTO "count_stream"
+    SELECT STREAM AD, MIN(INGESTION_TIME), COUNT(AD)
+        FROM "enhanced_stream"
+        GROUP BY AD,
+            STEP("enhanced_stream".ROWTIME BY INTERVAL '30' SECOND);
+```
+
+The `CREATE OR REPLACE STREAM` statement creates a stream accessible to other statements in the [SQL](https://docs.aws.amazon.com/kinesisanalytics/latest/sqlref/analytics-sql-reference.html) application and adds a continuous delivery stream output to the application.
+
+This stream can then be connected to a destination: a Kinesis stream, a Kinesis Firehose delivery stream or an AWS Lambda function.
+
+A [pump](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/streams-pumps.html) is a continuous insert query running that inserts data from one in-application stream to another in-application stream.
+
+This SQL application is commonly named a multi-step application:
+
+1. we create a stream and [extend the data with a referential](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html)
+2. we use that stream to perform an aggregation with a [tumbling window](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/tumbling-window-concepts.html) - non-overlapping manner, here every 30 seconds.
+
+#### AWS Lambda as a destination for a kinesis data analytics
+
+1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
+2. Open the `"EnhancementSQLApplication"` in the Kinesis Analytics Application card.
+3. You can see the Lambda function as a destination of the Kinesis Analytics application.
+4. Click the lambda function name
+
+![Lambda destination for a Kinesis Analytics application](resources/analytics-lambda.png)
+
+5. Inspect the code that pushes [custom metrics to Cloud Watch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+6. Open the monitoring tabulation
+
+![Lambda Monitoring of a Kinesis Analytics application](resources/analytics-lambdaMonitoring.png)
+
+You notice that the lambda function is called 10 times every 5 minutes. From [Using a Lambda Function as Output](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works-output-lambda.html):
+
+> If records are emitted to the destination in-application stream within the data analytics application as a tumbling window, the AWS Lambda destination function is invoked per tumbling window trigger. For example, if a tumbling window of 60 seconds is used to emit the records to the destination in-application stream, the Lambda function is invoked once every 60 seconds.
+
+As our tumbling window is 30 seconds, we are called two times per minutes, 10 times every 5 minutes.
 
 ### Visualization
 
