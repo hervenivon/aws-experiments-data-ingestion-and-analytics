@@ -158,13 +158,13 @@ For more information on the Manifest file, please have a look to [Supported Form
 
 #### Signing-up
 
-If you have already [signed up](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html.) for Amazon QuickSight or you haven't selected this experiment bucket during the sign-up, please allow QuickSight to [read the bucket](https://docs.aws.amazon.com/quicksight/latest/user/managing-permissions.html) of this experiment. You can find the bucket name in the output of the `cdk deploy` command line or from the `Cloud Formation` console.
+If you have already [signed up](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html.) for Amazon QuickSight or you haven't selected this experiment raw data bucket during the sign-up, please allow QuickSight to [read the bucket](https://docs.aws.amazon.com/quicksight/latest/user/managing-permissions.html) of this experiment. You can find the bucket name in the output of the `cdk deploy` command line or from the `Cloud Formation` console.
 
 #### Creating a dataset
 
 In this section you are going to create a [new QuickSight dataset using Amazon S3 files](https://docs.aws.amazon.com/quicksight/latest/user/create-a-data-set-s3.html).
 
-From the QuickSight home page:
+From the [QuickSight home page](https://us-east-1.quicksight.aws.amazon.com/sn/start):
 
 1. Click on "Manage Data"
 2. Click on "New Data Set"
@@ -487,6 +487,22 @@ The dashboard provides two views:
 You can further explore the source code of the widgets and the dashboard. You can easily extend the dashboard to your will.
 
 #### QuickSight
+
+Amazon QuickSight is a fast cloud native business intelligence service that makes it easy to deliver insights to everyone in your organization. It is a fully managed service, it scales automatically and you have nothing to provisioned.
+
+1. Go to your AWS Account,
+1. Search for Quicksight and open [it](https://us-east-1.quicksight.aws.amazon.com/sn/start).
+1. You can create and add:
+    - [Sheets](https://docs.aws.amazon.com/quicksight/latest/user/working-with-multiple-sheets.html)
+    - [Filters](https://docs.aws.amazon.com/quicksight/latest/user/adding-a-filter.html)
+    - [Calculated field](https://docs.aws.amazon.com/quicksight/latest/user/working-with-calculated-fields.html)
+    - [Visual](https://docs.aws.amazon.com/quicksight/latest/user/working-with-visuals.html)
+    - [Insights](https://docs.aws.amazon.com/quicksight/latest/user/making-data-driven-decisions-with-ml-in-quicksight.html)
+1. And [publish](https://docs.aws.amazon.com/quicksight/latest/user/example-create-a-dashboard.html) and [share](https://docs.aws.amazon.com/quicksight/latest/user/sharing-a-dashboard.html) your work as dashboards
+
+Here is a sampled Analysis I made based on the ingested data.
+
+![QuickSight Analysis](resources/quicksight-dashboard.png).
 
 ## Cost
 
