@@ -477,14 +477,14 @@ Amazon CloudWatch dashboards are customizable home pages in the CloudWatch [cons
 
 ![CloudWatch Dashboard](resources/cloudWatch-dashboard.png)
 
+In the above example, between 9AM and 9:30AM you can see a spike. It is because a second producer has been temporary launched. Kinesis Data Firehose adjust automatically to ingest the additional bid requests.
+
 The dashboard provides two views:
 
 - "Nbr of Bid requests per minutes": it is based on the custom metrics from the enhancement layer. It sums the values every minutes.
 - "Statistics over the last hour": it is based on the standard metrics provided by Kinesis Data Analytics. It sums the values over the last hour.
 
-You can explore the source code of the widgets and the dashboard from here.
-
-You can easily extend the dashboard to your will.
+You can further explore the source code of the widgets and the dashboard. You can easily extend the dashboard to your will.
 
 #### QuickSight
 
