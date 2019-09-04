@@ -502,7 +502,7 @@ Amazon QuickSight is a fast cloud-native business intelligence service that make
 
 Here is a sampled Analysis I made based on the ingested data.
 
-![QuickSight Analysis](resources/quicksight-dashboard.png).
+![QuickSight Analysis](resources/quicksight-Dashboard.png).
 
 ## Cost
 
