@@ -506,7 +506,118 @@ Here is a sampled Analysis I made based on the ingested data.
 
 ## Cost
 
+This paragraph describes the cost of this experiment for one hour of produced data by one producer detailed by layer and services. It roughly represents 270k records and 240 custom metrics (60 * 2 * 2).
+
+All prices are for the `us-east-1` AWS region.
+
+**Usage details**:
+
+- Producer:
+  - [Lambda](https://aws.amazon.com/lambda/pricing/):
+    - Memory: 128MB
+    - Duration: 2000 ms
+  - [Fargate](https://aws.amazon.com/fargate/pricing/):
+    - Task: 1
+    - vCPU: 0.5 (512 CPU unit requested, see [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for details)
+    - Memory: 512 MB
+  - Amazon S3:
+    - Mock file storage: 1.1 GB
+- Ingestion
+  - [Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/pricing/):
+    - Records: 270000
+    - Record size: 0.5KB
+  - Amazon S3:
+    - Ingested Raw Data: 0.27 GB
+- Enhancement
+  - [Kinesis Data Analytics](https://aws.amazon.com/kinesis/data-analytics/pricing/) SQL Application:
+    - [KPUs](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#metricsV2:graph=~(metrics~(~(~'AWS*2fKinesisAnalytics~'KPUs~'Application~'EnhancementSQLApplication))~view~'timeSeries~stacked~false~region~'us-east-1~start~'-P3D~end~'P0D~stat~'Sum~period~3600);query=~'*7bAWS*2fKinesisAnalytics*2cApplication*7d*20kinesis): 1
+  - [Lambda](https://aws.amazon.com/lambda/pricing/):
+    - Memory: 128 MB
+    - Duration: 32000 ms (120 * ~ 270 ms)
+  - Amazon S3:
+    - Referential file: 39 B
+- Visualization
+  - [CloudWatch](https://aws.amazon.com/cloudwatch/pricing/):
+    - Dashboard: 1
+    - Custom metrics: 2
+    - Custom metrics put: 240
+  - [Amazon Quicksight](https://aws.amazon.com/quicksight/pricing/):
+    - Admin: 1
+
+**Total costs**:
+
+- Lambda (assuming the whole [lambda free tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Categories=categories%23compute) has been consumed):
+  - Cost: 121 executions * $0.0000002 + 34000 / 100 * $0.000000208 = **$0**
+- Fargate:
+  - CPU charges: 1 task * O.5 vCPU * $0.04048 * 1 hour = **$0.02024**
+  - Memory charges: 1 task * 0.5 GB * $0.004445 * 1 hour = **$0.0022225**
+- Kinesis Data Firehose:
+  - Total record size (each record rounded to nearest 5KB): 1.35GB
+  - Cost: 1.35 * $0.029 = **$0.03915**
+- Kinesis Data Analytics:
+  - Cost: 1 KPU * $0.11 = **$0.11**
+- CloudWatch (assuming the whole [CloudWatch free tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Categories=*all&all-free-tier.q=cloudwatch&all-free-tier.q_operator=AND) has been consumed):
+  - Cost Dashboard: **$3**
+  - Cost custom metrics: 1 metric * $0.3 = **$0.3**
+  - Cost API Calls (push custom metrics + dashboard display) ~ to 1000 calls: 1 * $0.01 = **$0.01**
+- Amazon S3 (Assuming data will stay on S3 for one month):
+  - Cost storage: ~ 1.4 GB * $0.023 = **$0.0323**
+  - Cost API ~ to 1000 calls PUT and 1000 calls GET: 1 * $0.005 + 1 * $0.0004= **$0.00504**
+- QuickSight (Assuming paying for one month):
+  - Cost author: **$24**
+
+**Total**: < $30
+
 ## Solutions alternatives
+
+Although the cost can't be simply multiply when you scale your application - decreasing price mechanism notably apply to several services and the QuickSight fees would be mostly the same until you require more capacities - it is interesting to look at specific parts of this architecture and estimate what would be the cost with the presented technology and some alternatives.
+
+Example: What would be the cost of the ingestion layer for 800.000 bid requests / seconds for 1 hour?
+
+Architecture alternatives to Kinesis Data Firehose for data ingestion:
+
+- [Amazon Kinesis Data Stream](https://aws.amazon.com/kinesis/data-streams/): It is a massively scalable and durable real-time data streaming service. In the same fashion than Amazon Kinesis Data Firehose except that you must manage shards.
+- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): It is a fully managed and serverless key-value and document database that delivers single-digit millisecond performance at any scale. We could use its API to push records directly into the database and later on using it.
+- [Amazon MSK](https://aws.amazon.com/msk): it is a fully managed Apache Kafka service that makes it easy for you to build and run applications to process streaming data.
+
+[Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/pricing/):
+
+- Total record size (each record rounded to nearest 5KB): 800000 * 60 * 60 * 5KB = 14.4 TB (14400 GB)
+- Cost: $0.029 * 14400 = **$417.6**
+
+[Kinesis Data Stream](https://aws.amazon.com/kinesis/data-streams/pricing/):
+
+- "One shard provides ingest capacity of 1MB/sec or 1000 records/sec"
+- "A PUT Payload Unit is counted in 25KB payload “chunks” that comprise a record"
+- Each record is 0.5 KB, so 1000 records represents 0.5 MB. One shard will handle 1000 records/sec
+- Each record represents 1 PUT Payload Unit
+- At 800000 records/ses:
+  - 800 shards are necessary
+  - it represents 2,880,000,000 PUT Payload Unit
+- Cost: 800 shards * $0.015 + 2,880 PUT payload units * $0.014 = **$52,32**
+
+[Amazon DynamoDB](https://aws.amazon.com/dynamodb/pricing/):
+
+- "For items up to 1 KB in size, one WCU can perform one standard write request per second."
+- 800000 WCU are necessary to write records in the table
+- Cost write: 800000/s over one hour * $0.00065/hour = **$520** (Doesn't include reading cost)
+- Cost storage: 800000 * 60 * 60 * 0.5 KB = 1440 GB * $0.25 = **$360**
+
+[Amazon MSK](https://aws.amazon.com/msk/pricing):
+
+- Assuming a broker instance `kafka.m5.24xlarge` can handle 200000 requests / sec
+- Broker cost: 4 * $10.08 = **$40.32**
+- Broker Storage Cost: 800000 * 60 * 60 * 0.5 KB = 1440 GB * $0.1 = **$140**
+
+In that example, Amazon Kinesis Data Stream is the winner. In that case it would be necessary to manage scaling of the kinesis stream. 800 shards won't always be necessary.
+
+At a larger scale, some optimization and best practices will be necessary. Other alternatives might be tested (such as EC2 fleet behind a load balancer):
+
+- Records grouping to reduce the amount of records to ingest
+- Geo distribution of ingestion layer to reduce latency
+- Enhancement of Elasticity
+
+To learn more about real time bidding on AWS, read the [whitepaper](https://d1.awsstatic.com/whitepapers/Building_a_Real_Time_Bidding_Platform_on_AWS_v1_Final.pdf).
 
 ## Develop
 
