@@ -479,10 +479,12 @@ Amazon CloudWatch dashboards are customizable home pages in the CloudWatch [cons
 
 The dashboard provides two views:
 
-- "Nbr of Bid requests per minutes" based on the custom metrics from the enhancement layer. Sum the values every minutes.
-- "Statistics over the last hour" based on the standard metrics provided by Kinesis Data Analytics. Sum the values over the last hour.
+- "Nbr of Bid requests per minutes": it is based on the custom metrics from the enhancement layer. It sums the values every minutes.
+- "Statistics over the last hour": it is based on the standard metrics provided by Kinesis Data Analytics. It sums the values over the last hour.
 
 You can explore the source code of the widgets and the dashboard from here.
+
+You can easily extend the dashboard to your will.
 
 #### QuickSight
 
