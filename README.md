@@ -1,17 +1,17 @@
 # AWS Serverless Data Lake for Bid Requests
 
-This experiment simulates data ingestion of bid requests to a serverless data lake and data analytics pipeline deployed on AWS. As a result you get a real time dashboard and a BI tool to analyse your stream of bid requests. Overview of the real time dashboard.
+This experiment simulates data ingestion of bid requests to a serverless data lake and data analytics pipeline deployed on AWS. As a result, you get a real-time dashboard and a BI tool to analyze your stream of bid requests. Overview of the real-time dashboard.
 
-![Overview of the real time CloudWatch dashboard](resources/cloudWatch-dashboard.gif)
+![Overview of the real-time CloudWatch dashboard](resources/cloudWatch-dashboard.gif)
 
 Services in use:
 
 - [Amazon Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/) for data ingestion,
 - [Amazon Kinesis Data Analytics](https://aws.amazon.com/kinesis/data-analytics/) for data enhancement,
 - [Amazon S3](https://aws.amazon.com/s3/) for data storage,
-- [AWS Lambda](https://aws.amazon.com/lambda/) for publishing near real time measures,
+- [AWS Lambda](https://aws.amazon.com/lambda/) for publishing near real-time measures,
 - [Amazon QuickSight](https://aws.amazon.com/quicksight/) for data visualization,
-- [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) for near real time data visualization,
+- [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) for near real-time data visualization,
 - [AWS Fargate](https://aws.amazon.com/fargate/) for simulating bid requests.
 
 [Data used](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz) for this experiment are coming from the [Kaggle Display Advertising Challenge Dataset](https://labs.criteo.com/2014/02/download-kaggle-display-advertising-challenge-dataset/) published in 2014 by [Criteo](https://www.kaggle.com/c/criteo-display-ad-challenge/data). If you are curious or if you want to push the Criteo Dataset further, you can refer to their 2015 [announcement](https://labs.criteo.com/2015/03/criteo-releases-its-new-dataset/) and the related [download](https://labs.criteo.com/2013/12/download-terabyte-click-logs-2/).
@@ -21,9 +21,9 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 ## Table of content
 
 - [Architecture overview](#architecture-overview)
-- [Pre requisites](#pre-requisites)
+- [Prerequisites](#prerequisites)
 - [Deployment of the experiment](#deployment-of-the-experiment)
-  - [Downloading necessary Data](#downloading-necessary-data)
+  - [Downloading necessary data](#downloading-necessary-data)
   - [Building the CDK application](#building-the-cdk-application)
   - [Deploying the stack and upload the data](#deploying-the-stack-and-upload-the-data)
   - [Deploying Amazon QuickSight](#deploying-amazon-quicksight)
@@ -66,38 +66,38 @@ Every time it is possible, this experiment leverages [AWS CDK](https://docs.aws.
 3. Enhancement: Amazon Kinesis Data Analytics
     - enhances the data with catalog stored in Amazon s3
     - computes counters from the ingestion stream of records
-    - triggers a AWS Lambda function to store real time counts in Amazon CloudWatch
+    - triggers an AWS Lambda function to store real-time counts in Amazon CloudWatch
 4. Visualization:
-    - Amazon CloudWatch allows visualization of custom near real-time metrics
+    - Amazon CloudWatch allows viewing of custom near real-time metrics
     - Amazon Quick Sights allows reporting on raw data stored in Amazon S3
 
 ![Architecture](resources/architecture.png)
 
-## Pre requisites
+## Prerequisites
 
-For this experiment you will need the following:
+For this experiment, you will need the following:
 
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-- An AWS account. If you don’t have an AWS account, you can create a free account [here](https://portal.aws.amazon.com/billing/signup/iam).
-- Node.js (>= 8.10). To install Node.js visit the [node.js](https://nodejs.org/en/) website. You can also a node version manager: [nvm](https://github.com/nvm-sh/nvm)
+- An AWS account. If you don't have an AWS account, you can create a free account [here](https://portal.aws.amazon.com/billing/signup/iam).
+- Node.js (>= 8.10). To install Node.js visit the [node.js](https://nodejs.org/en/) website. You can also install the node version manager: [nvm](https://github.com/nvm-sh/nvm)
 - The [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) toolkit: `$> npm install -g aws-cdk`
 
 If this is the first time you deploy a CDK application in an AWS environment, you need to bootstrap it: `cdk bootstrap`. Please take a look at the bootstrap section of the [CDK workshop](https://cdkworkshop.com/20-typescript/20-create-project/500-deploy.html).
 
 ## Deployment of the experiment
 
-In order to deploy this experiment in your account, you have four actions to take:
+To deploy this experiment in your account, you have four actions to take:
 
 1. Download necessary data
 2. Build the CDK application
 3. Deploy the stack and upload the data
 4. Deploy Amazon QuickSight
 
-### Downloading necessary Data
+### Downloading necessary data
 
 Download the [data](https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz) and extract the `zip` file to the `data` directory.
 
-**Important**: we don't want to upload the whole dataset, therefore we are taking a small amount of it with the following command in the `data` directory:
+**Important**: we don't want to upload the whole dataset. Therefore we are taking a small amount of it with the following command in the `data` directory:
 
 ```bash
 $> head -5000000 train.txt > bidrequests.txt
@@ -148,7 +148,7 @@ In order to deploy the Amazon QuickSight dashboard, you must do the following:
 2. Signing-up
 3. Creating a dataset
 
-A pre requisite to the deployment of Amazon QuickSight using a S3 bucket is that the data actually exist in the bucket. So, please follow this part once you have launch the data producer.
+A prerequisite to the deployment of Amazon QuickSight using a S3 bucket is that the data actually exists in the bucket. So, please follow this part once you have launched the data producer.
 
 #### Preparing the Manifest file
 
@@ -162,7 +162,7 @@ If you have already [signed up](https://docs.aws.amazon.com/quicksight/latest/us
 
 #### Creating a dataset
 
-In this section you are going to create a [new QuickSight dataset using Amazon S3 files](https://docs.aws.amazon.com/quicksight/latest/user/create-a-data-set-s3.html).
+In this section, you are going to create a [new QuickSight dataset using Amazon S3 files](https://docs.aws.amazon.com/quicksight/latest/user/create-a-data-set-s3.html).
 
 From the [QuickSight home page](https://us-east-1.quicksight.aws.amazon.com/sn/start):
 
@@ -179,7 +179,7 @@ You should see the following screen:
 
 ![Finish Data Set Creation](resources/quicksight-finishDataSetCreation.png)
 
-Your good to go with the QuickSight deployment. For an exploration of Quicksight for this experiment, see [Exploring the demo](#exploring-the-demo).
+The QuickSight "deployment" is finished. For an exploration of Quicksight, see [Exploring the demo](#exploring-the-demo).
 
 Once the import is finished, you will get the following screen:
 
@@ -206,7 +206,7 @@ Note: Amazon QuickSight has certain [Data Source Limits](https://docs.aws.amazon
 
 ## Exploring the demo
 
-Before starting the exploration of the demo, let's launch the producer and application. This will populate the demonstration with data and we will have something to look at.
+Before starting the exploration of the demo, let's launch the producer and application. This will populate the demonstration with data, and we will have something to look at.
 
 ### Launching the experiment
 
@@ -214,13 +214,13 @@ Before starting the exploration of the demo, let's launch the producer and appli
 
 As part of the demo, we have deployed a lambda function to simplify the launch of the producer running on AWS Fargate.
 
-To launch the producer execute the command line that you get as an output of the deployed demo in the output named `DataExperimentStack.ProducerLayerlaunchProducerOnMacOS` or `DataExperimentStack.ProducerLayerlaunchProducerOnLinux`. On MacOS, it will look like this.
+To launch the producer, execute the command line that you get as an output of the deployed demo in the output named `DataExperimentStack.ProducerLayerlaunchProducerOnMacOS` or `DataExperimentStack.ProducerLayerlaunchProducerOnLinux`. On MacOS, it will look like this.
 
 ```bash
 $> aws lambda invoke --function-name arn:aws:lambda:us-east-1:XXXXXXXXXXXX:function:DataExperimentStack-ProducerLayerProducerLauncherD-XXXXXXXXXXXXX --payload '{}' /tmp/out --log-type Tail --query 'LogResult' --output text | base64 -D
 ```
 
-As an output you get the [ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) of the running task.
+As an output, you get the [ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) of the running task.
 
 Note: If you encounter the following error `"Unable to assume the service linked role. Please verify that the ECS service linked role exists."` while launching the producer, please follow instructions [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using-service-linked-roles.html#create-service-linked-role) and create the linked service role:
 
@@ -230,7 +230,7 @@ $> aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 
 #### Launching the Kinesis Data Analytics Application
 
-In order to get enhanced results and real time metrics, you need to also launch the Kinesis Data Analytics Application. To do so, execute the following command:
+In order to get enhanced results and real-time metrics, you need to also launch the Kinesis Data Analytics Application. To do so, execute the following command:
 
 ```bash
 $> aws kinesisanalytics start-application --application-name EnhancementSQLApplication --input-configurations Id=1.1,InputStartingPositionConfiguration={InputStartingPosition=LAST_STOPPED_POINT}
@@ -265,7 +265,7 @@ You can get a list of all resources deployed related to the producer in the Clou
 
 AWS Lambda is a compute service that lets you run code without provisioning or managing servers.
 
-In the present case, we use AWS Lambda to launch the Fargate Task from all the necessary information provided at deployed time by the CDK application:
+In the present case, we use AWS Lambda to launch the Fargate Task from all the necessary information provided at deployment time by the CDK application:
 
 - The [ECS cluster](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_clusters.html)
 - The private subnets of the newly launched [VPC](https://docs.amazonaws.cn/en_us/vpc/latest/userguide/what-is-amazon-vpc.html)
@@ -323,14 +323,14 @@ The data generated by the producer are pushed to an ingestion layer made of:
 
 #### Kinesis Data Firehose
 
-Amazon Kinesis Data Firehose is a fully managed service to load streaming data into data stores and analytics tools. It can capture, transform, compress and load streaming data into various destination such as Amazon S3 or Amazon Elasticsearch Service. It automatically scales to the load. Further details [here](https://aws.amazon.com/kinesis/data-firehose/faqs/).
+Amazon Kinesis Data Firehose is a fully managed service to load streaming data into data stores and analytics tools. It can capture, transform, compress, and load streaming data into various destination such as Amazon S3 or Amazon Elasticsearch Service. It automatically scales to the load. Further details [here](https://aws.amazon.com/kinesis/data-firehose/faqs/).
 
 1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
 
 ![Kinesis Dashboard](resources/kinesis-dashboard.png)
 
 2. From here, open the `"BidRequestExperimentIngestionLayer"` kinesis delivery stream
-3. Inspect the details of the stream, in particular take a look at the Amazon S3 destination configuration
+3. Inspect the details of the stream, in particular, take a look at the Amazon S3 destination configuration
 
 ![Kinesis delivery stream S3 destination configuration](resources/firehose-s3destination.png)
 
@@ -344,12 +344,12 @@ This tabulation provides a monitoring view of the stream like the number of "Inc
 
 #### S3
 
-Amazon Simple Storage Service (S3) is a storage designed for the Internet scale. In this experiment, S3 is a fully managed serverless data lake. It automatically scales, and you don't need to provision any storage space.
+Amazon Simple Storage Service (S3) is a storage solution designed for the Internet scale. In this experiment, S3 is a fully managed serverless data lake. It automatically scales, and you don't need to provision any storage space.
 
 1. From the Kinesis Firehose delivery stream details page, click on the S3 bucket link from the "Amazon S3 destination" section.
 2. Open the `"raw-data"` folder then navigate the structure up to a list of files.
 
-Firehose has been configured to push all data in the `"raw-data"` folder in S3. After that all data are pushed according the its buffer configuration to the actual `"YYYY/MM/DD/HH"` [UTC](https://docs.aws.amazon.com/firehose/latest/dev/create-destination.html)
+Firehose has been configured to prefix all data with `"raw-data"` in S3. All data are pushed according to this prefix and then with the date prefix: `"YYYY/MM/DD/HH"` [UTC](https://docs.aws.amazon.com/firehose/latest/dev/create-destination.html)
 
 ![S3 data structure](resources/s3-rawdata.png)
 
@@ -363,7 +363,7 @@ The data ingested are processed through an SQL application that enhances the dat
 
 - A Kinesis Data Analytics [SQL application](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works.html),
 - A [Lambda function](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/how-it-works-output-lambda.html) that push the results of the Data Analytics application to CloudWatch [custom metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html),
-- A S3 object that represents a table to [add reference data](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html) to the ingestion stream.
+- A S3 object that represents a table to [add reference data](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html) into the ingestion stream.
 
 #### S3 for referential data
 
@@ -380,7 +380,7 @@ See [Example: Adding Reference Data to a Kinesis Data Analytics Application](htt
 
 #### Kinesis Data analytics SQL application
 
-A Kinesis Data Analytics application continuously reads and processes streaming data in real time. You write application code using SQL or Java to process the incoming streaming data and produce output(s). In our case, we use an SQL application.
+A Kinesis Data Analytics application continuously reads and processes streaming data in real-time. You write application code using SQL or Java to process the incoming streaming data and produce output(s). In our case, we use an SQL application.
 
 Kinesis Data Analytics then writes the output to a configured destination. The following diagram illustrates a typical application architecture.
 
@@ -399,12 +399,12 @@ This experiment leverages as a:
 
 1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
 2. Open the `"EnhancementSQLApplication"` in the Kinesis Analytics Application card.
-3. You can see the Firehose delivery stream a streaming data and its associated "In-application reference table name" that can be used in the SQL application
+3. You can see the Firehose delivery stream as a "streaming data" and its associated "In-application reference table name" that can be used in the SQL application
 4. Click "Go to SQL results"
 
 ![SQL editor](resources/analytics-SQLeditor.png)
 
-From here you can navigate the application, edit the SQL, see incoming data, and real-time computed analytics.
+From here, you can navigate the application, edit the SQL, see incoming data, and real-time computed analytics.
 
 SQL code:
 
@@ -436,7 +436,7 @@ This SQL application is commonly named a multi-step application:
 1. we create a stream and [extend the data with a referential](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/app-add-reference-data.html)
 2. we use that stream to perform an aggregation with a [tumbling window](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/tumbling-window-concepts.html) - non-overlapping manner, here every 30 seconds.
 
-#### AWS Lambda as a destination for a kinesis data analytics
+#### AWS Lambda as a destination for a Kinesis data analytics
 
 1. Open the [Kinesis Dashboard](https://console.aws.amazon.com/kinesis/home?region=us-east-1#/dashboard).
 2. Open the `"EnhancementSQLApplication"` in the Kinesis Analytics Application card.
@@ -477,18 +477,18 @@ Amazon CloudWatch dashboards are customizable home pages in the CloudWatch [cons
 
 ![CloudWatch Dashboard](resources/cloudWatch-dashboard.png)
 
-In the above example, between 9AM and 9:30AM you can see a spike. It is because a second producer has been temporary launched. Kinesis Data Firehose adjust automatically to ingest the additional bid requests.
+In the above example, between 9AM and 9:30AM you can see a spike. It is because a second producer has been temporarily launched. Kinesis Data Firehose adjusts automatically to ingest the additional bid requests.
 
 The dashboard provides two views:
 
-- "Nbr of Bid requests per minutes": it is based on the custom metrics from the enhancement layer. It sums the values every minutes.
+- "Nbr of Bid requests per minutes": it is based on the custom metrics from the enhancement layer. It sums the values every minute.
 - "Statistics over the last hour": it is based on the standard metrics provided by Kinesis Data Analytics. It sums the values over the last hour.
 
 You can further explore the source code of the widgets and the dashboard. You can easily extend the dashboard to your will.
 
 #### QuickSight
 
-Amazon QuickSight is a fast cloud native business intelligence service that makes it easy to deliver insights to everyone in your organization. It is a fully managed service, it scales automatically and you have nothing to provisioned.
+Amazon QuickSight is a fast cloud-native business intelligence service that makes it easy to deliver insights to everyone in your organization. It is a fully managed service, that scales automatically to your need. You pay only per editor and per viewer per session. You don't need to provision capacity unless you need extra performance.
 
 1. Go to your AWS Account,
 1. Search for Quicksight and open [it](https://us-east-1.quicksight.aws.amazon.com/sn/start).
@@ -570,7 +570,7 @@ All prices are for the `us-east-1` AWS region.
 
 ## Solutions alternatives
 
-Although the cost can't be simply multiply when you scale your application - decreasing price mechanism notably apply to several services and the QuickSight fees would be mostly the same until you require more capacities - it is interesting to look at specific parts of this architecture and estimate what would be the cost with the presented technology and some alternatives.
+Although the cost can't simply multiply when you scale your application - decreasing price mechanism notably apply to several services and the QuickSight fees would be mostly the same until you require more capacities - it is interesting to look at specific parts of this architecture and estimate what would be the cost with the presented technology and some alternatives.
 
 Example: What would be the cost of the ingestion layer for 800.000 bid requests / seconds for 1 hour?
 
@@ -609,15 +609,15 @@ Architecture alternatives to Kinesis Data Firehose for data ingestion:
 - Broker cost: 4 * $10.08 = **$40.32**
 - Broker Storage Cost: 800000 * 60 * 60 * 0.5 KB = 1440 GB * $0.1 = **$140**
 
-In that example, Amazon Kinesis Data Stream is the winner. In that case it would be necessary to manage scaling of the kinesis stream. 800 shards won't always be necessary.
+In that example, Amazon Kinesis Data Stream is the winner. In that case, contrary to Kinesis Firehose, it would be necessary to manage the scaling (in and out) of the Kinesis Data Stream: 800 shards won't always be necessary.
 
 At a larger scale, some optimization and best practices will be necessary. Other alternatives might be tested (such as EC2 fleet behind a load balancer):
 
-- Records grouping to reduce the amount of records to ingest
+- Records grouping to reduce the number of records to ingest
 - Geo distribution of ingestion layer to reduce latency
 - Enhancement of Elasticity
 
-To learn more about real time bidding on AWS, read the [whitepaper](https://d1.awsstatic.com/whitepapers/Building_a_Real_Time_Bidding_Platform_on_AWS_v1_Final.pdf).
+To learn more about real-time bidding on AWS, read the [whitepaper](https://d1.awsstatic.com/whitepapers/Building_a_Real_Time_Bidding_Platform_on_AWS_v1_Final.pdf).
 
 ## Develop
 
@@ -640,7 +640,7 @@ $> npm run watch
 - `cdk synth`       emits the synthesized CloudFormation template
 - `cdk destroy`     destroy the CDK application in your default AWS account/region
 
-Note: a `cdk diff` command might take up to the minute. The main reason here is that the CDK command perform a hash of a very big file (`train.txt`) that we are uploading as an asset of the application.
+Note: a `cdk diff` command might take up several seconds. The main reason here is that the CDK command performs a hash of a very big file (`train.txt`) that we are uploading as an asset of the application.
 
 ## Clean up
 
